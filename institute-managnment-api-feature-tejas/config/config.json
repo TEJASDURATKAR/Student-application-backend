@@ -1,0 +1,24 @@
+{
+  "development": {
+  "username": "postgres",
+  "database": "student-protal002",
+  "password": "12061206",
+  "host": "localhost",
+  "dialect": "postgres"
+}
+,
+  "local": {
+    "username": "postgres",
+    "database": "student-protal002",
+    "password": "12061206",
+    "host": "localhost",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "",
+    "database": "",
+    "password": "",
+    "host": "localhost",
+    "dialect": "postgres"
+  }
+}
