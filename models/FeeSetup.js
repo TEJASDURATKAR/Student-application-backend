@@ -53,6 +53,12 @@ const FeeSetup = sequelize.define(
       type: DataTypes.FLOAT,
       defaultValue: 0,
     },
+    // ✅ New column added as per migration
+    payment_status: {
+      type: DataTypes.ENUM("pending", "paid"),
+      allowNull: false,
+      defaultValue: "pending",
+    },
 
     payable_fee: {
       type: DataTypes.FLOAT,

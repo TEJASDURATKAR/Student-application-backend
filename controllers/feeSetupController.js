@@ -13,22 +13,29 @@ export const createFeeSetup = async (req, res) => {
       discount,
       payable_fee,
       payment_type,
-      advance_money = 0, // default 0
+      advance_money = 0,
+      payment_status = "pending", // ✅ default if not provided
       installments = [],
     } = req.body;
 
     if (!customer_id)
-      return res.status(400).json({ success: false, message: "customer_id is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "customer_id is required" });
 
     // ✅ Verify Admission belongs to this customer
     const admission = await Admission.findOne({ where: { admission_id, customer_id } });
     if (!admission)
-      return res.status(404).json({ success: false, message: "Admission not found for this customer" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Admission not found for this customer" });
 
     // ✅ Verify Batch belongs to this customer
     const batch = await Batches.findOne({ where: { batch_id, customer_id } });
     if (!batch)
-      return res.status(404).json({ success: false, message: "Batch not found for this customer" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Batch not found for this customer" });
 
     // ✅ Step 1: Create Fee Setup
     const feeSetup = await FeeSetup.create({
@@ -40,6 +47,7 @@ export const createFeeSetup = async (req, res) => {
       payable_fee,
       advance_money,
       payment_type,
+      payment_status, // ✅ Added
       is_active: true,
       is_deleted: false,
     });
@@ -51,10 +59,11 @@ export const createFeeSetup = async (req, res) => {
         installment_due_date: inst.due_date,
         amount: inst.amount,
         status: inst.status || "pending",
+         paid_date: inst.paid_date || null, 
         customer_id,
       }));
 
-      await Installment.bulkCreate(bulkData, { validate: true }); // ✅ fast + safe
+      await Installment.bulkCreate(bulkData, { validate: true });
     }
 
     // ✅ Step 3: Return response
@@ -72,6 +81,7 @@ export const createFeeSetup = async (req, res) => {
     });
   }
 };
+
 
 
 
@@ -137,6 +147,7 @@ export const updateFeeSetup = async (req, res) => {
       payable_fee,
       payment_type,
       advance_money,
+      payment_status, // ✅ added field
       installments = [],
     } = req.body;
 
@@ -155,6 +166,7 @@ export const updateFeeSetup = async (req, res) => {
       payable_fee,
       advance_money,
       payment_type,
+      payment_status, // ✅ added field
     });
 
     // ✅ If payment_type is "installment", handle installment logic
@@ -172,6 +184,7 @@ export const updateFeeSetup = async (req, res) => {
           await Installment.update(
             {
               installment_due_date: inst.due_date || inst.installment_due_date,
+              paid_date: inst.paid_date || null,
               amount: inst.amount,
               status: inst.status || "pending",
             },

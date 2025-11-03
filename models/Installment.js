@@ -25,6 +25,11 @@ const Installment = sequelize.define(
       type: DataTypes.DATEONLY,
       allowNull: false,
     },
+    paid_date: {
+      type: DataTypes.DATE,
+      allowNull: true, // optional, since payment may not be done yet
+      },
+
     amount: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,

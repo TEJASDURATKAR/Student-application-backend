@@ -12,7 +12,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: "FeeSetups", // ✅ links correctly to FeeSetups
+          model: "FeeSetups", // ✅ linked correctly
           key: "fee_id",
         },
         onUpdate: "CASCADE",
@@ -30,6 +30,13 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: false,
       },
+
+      // ✅ Added: Paid date field
+      paid_date: {
+        type: Sequelize.DATE,
+        allowNull: true, // optional, since payment may not be done yet
+      },
+
       payment_status: {
         type: Sequelize.ENUM("pending", "paid"),
         defaultValue: "pending",
