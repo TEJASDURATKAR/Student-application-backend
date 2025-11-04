@@ -9,7 +9,7 @@ import Enquiry from "./Enquiry.js";
 import Permission from "./Permission.js";
 import FeeSetup from "./FeeSetup.js";
 import Installment from "./Installment.js";
-
+import Receipt from "./Receipt.js"; // ✅ Import added
 
 // --------------------
 // User associations
@@ -26,12 +26,11 @@ Role.belongsTo(Customer, { foreignKey: "customer_id", as: "Customer" });
 // --------------------
 // Teacher <-> Course (many-to-many)
 // --------------------
-// Teacher <-> Course (many-to-many)
 Course.belongsToMany(Teacher, {
-  through: "CourseTeachers", // Join table
+  through: "CourseTeachers",
   foreignKey: "course_id",
   otherKey: "teacher_id",
-  as: "teachers", // this alias must match the include
+  as: "teachers",
 });
 
 Teacher.belongsToMany(Course, {
@@ -49,20 +48,20 @@ Batches.belongsTo(Course, { foreignKey: "course_id", as: "course" });
 
 // --------------------
 // Batch <-> Admission
-Admission.belongsTo(Batches, { 
-  as: "batch", 
-  foreignKey: "batch_id",
-  onDelete: "CASCADE",   // ⚡ delete admissions when batch is deleted
-  onUpdate: "CASCADE"
-});
-
-Batches.hasMany(Admission, { 
-  as: "admissions", 
+// --------------------
+Admission.belongsTo(Batches, {
+  as: "batch",
   foreignKey: "batch_id",
   onDelete: "CASCADE",
-  onUpdate: "CASCADE"
+  onUpdate: "CASCADE",
 });
 
+Batches.hasMany(Admission, {
+  as: "admissions",
+  foreignKey: "batch_id",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
 
 // --------------------
 // ✅ Customer <-> Admission (SaaS linkage)
@@ -70,13 +69,11 @@ Batches.hasMany(Admission, {
 Customer.hasMany(Admission, { foreignKey: "customer_id", as: "Admissions" });
 Admission.belongsTo(Customer, { foreignKey: "customer_id", as: "Customer" });
 
-
 // --------------------
 // User <-> Enquiry (Handled By)
 // --------------------
 User.hasMany(Enquiry, { foreignKey: "handled_by", as: "HandledEnquiries" });
 Enquiry.belongsTo(User, { foreignKey: "handled_by", as: "HandledBy" });
-
 
 // --------------------
 // Customer <-> Enquiry (SaaS linkage)
@@ -102,7 +99,7 @@ Course.belongsTo(Customer, { foreignKey: "customer_id", as: "Customer" });
 Customer.hasMany(Batches, { foreignKey: "customer_id", as: "Batches" });
 Batches.belongsTo(Customer, { foreignKey: "customer_id", as: "Customer" });
 
-
+// --------------------
 // Role <-> Permission
 // --------------------
 Role.hasMany(Permission, { foreignKey: "role_id", as: "Permissions" });
@@ -129,7 +126,7 @@ FeeSetup.belongsTo(Admission, {
 });
 
 // --------------------
-// ✅ FeeSetup <-> Customer (SaaS linkage)
+// ✅ FeeSetup <-> Customer
 // --------------------
 Customer.hasMany(FeeSetup, { foreignKey: "customer_id", as: "FeeSetups" });
 FeeSetup.belongsTo(Customer, { foreignKey: "customer_id", as: "Customer" });
@@ -137,7 +134,6 @@ FeeSetup.belongsTo(Customer, { foreignKey: "customer_id", as: "Customer" });
 // --------------------
 // ✅ FeeSetup <-> Installment
 // --------------------
-// ✅ Associations
 FeeSetup.hasMany(Installment, {
   foreignKey: "fee_id",
   as: "installments",
@@ -169,9 +165,45 @@ FeeSetup.belongsTo(Batches, {
   onUpdate: "CASCADE",
 });
 
+// --------------------
+// ✅ Receipt <-> Installment / Admission / Customer
+// --------------------
+Receipt.belongsTo(Customer, {
+  foreignKey: "customer_id",
+  as: "Customer",
+});
+
+Receipt.belongsTo(Installment, {
+  foreignKey: "installment_id",
+  as: "Installment",
+});
+
+Receipt.belongsTo(Admission, {
+  foreignKey: "admission_id",
+  as: "Admission",
+});
+
+// ✅ Reverse associations
+Customer.hasMany(Receipt, { foreignKey: "customer_id", as: "Receipts" });
+Installment.hasMany(Receipt, { foreignKey: "installment_id", as: "Receipts" });
+Admission.hasMany(Receipt, { foreignKey: "admission_id", as: "Receipts" });
 
 // --------------------
 // Export all models
 // --------------------
-const models = { User, Role, Customer, Enquiry, Course, Teacher, Admission, Batches, Permission , FeeSetup, Installment};
+const models = {
+  User,
+  Role,
+  Customer,
+  Enquiry,
+  Course,
+  Teacher,
+  Admission,
+  Batches,
+  Permission,
+  FeeSetup,
+  Installment,
+  Receipt, // ✅ Exported new model
+};
+
 export default models;

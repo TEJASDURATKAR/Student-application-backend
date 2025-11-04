@@ -17,6 +17,7 @@ import { admissionRouter } from "./routes/admissionRoutes.js";
 import { permissionRouter } from "./routes/permissionRoutes.js";
 import feeSetupRouter from "./routes/feeSetupRoutes.js";
 import installmentRouter from "./routes/installmentRoutes.js";
+import receiptRouter from "./routes/receiptRoutes.js";
 
 
 const app = express();
@@ -54,6 +55,7 @@ app.use("/api/admissions", admissionRouter);
 app.use("/api/permissions", permissionRouter);
 app.use("/api/fee-setups", feeSetupRouter);
 app.use("/api/installments", installmentRouter);
+app.use("/api/receipts", receiptRouter);
 
 // if (process.env.NODE_ENV === "production" || process.env.NODE_ENV === "staging") {
 app.use(express.static(path.join(__dirname, "frontend")));
