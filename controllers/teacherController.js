@@ -1,31 +1,43 @@
 import models from "../models/index.js";
 const { Teacher, Course } = models;
+import response from "../const/response.js";
+import { HTTP_MESSAGES } from "../const/message.js";
 
 // ----------------------
 // CREATE Teacher (SaaS Scoped)
 // ----------------------
 export const createTeacher = async (req, res) => {
   try {
-    // ✅ Get customer_id from authenticated user
     const customer_id = req.user?.customer_id || req.body.customer_id;
 
     if (!customer_id) {
-      return res.status(400).json({ message: "Customer ID is required" });
+      return response.errorMessageResponse(
+        res,
+        400,
+        {},
+        HTTP_MESSAGES.EN.CUSTOMER_ID_REQUIRED
+      );
     }
 
     const teacher = await Teacher.create({
       ...req.body,
-      customer_id, // 👈 Add it here
+      customer_id,
     });
 
-    res.status(201).json({
-      success: true,
-      message: "Teacher created successfully",
-      data: teacher,
-    });
+    return response.successResponse(
+      res,
+      201,
+      teacher,
+      HTTP_MESSAGES.EN.CREATE_SUCCESS("Teacher")
+    );
   } catch (error) {
-    console.error("Create Teacher Error:", error);
-    res.status(500).json({ success: false, message: error.message });
+    console.error("❌ Create Teacher Error:", error);
+    return response.errorMessageResponse(
+      res,
+      500,
+      {},
+      HTTP_MESSAGES.EN.SERVER_ERROR
+    );
   }
 };
 
@@ -37,7 +49,12 @@ export const getAllTeachers = async (req, res) => {
     const customer_id = req.user?.customer_id || req.query.customer_id;
 
     if (!customer_id) {
-      return res.status(400).json({ message: "Customer ID is required" });
+      return response.errorMessageResponse(
+        res,
+        400,
+        {},
+        HTTP_MESSAGES.EN.CUSTOMER_ID_REQUIRED
+      );
     }
 
     const teachers = await Teacher.findAll({
@@ -52,13 +69,20 @@ export const getAllTeachers = async (req, res) => {
       order: [["createdAt", "DESC"]],
     });
 
-    res.status(200).json({
-      success: true,
-      data: teachers,
-    });
+    return response.successResponse(
+      res,
+      200,
+      teachers,
+      HTTP_MESSAGES.EN.FETCH_SUCCESS("Teachers")
+    );
   } catch (error) {
-    console.error("Get All Teachers Error:", error);
-    res.status(500).json({ success: false, message: error.message });
+    console.error("❌ Get All Teachers Error:", error);
+    return response.errorMessageResponse(
+      res,
+      500,
+      {},
+      HTTP_MESSAGES.EN.SERVER_ERROR
+    );
   }
 };
 
@@ -75,12 +99,29 @@ export const TeacherById = async (req, res) => {
       include: [{ model: Course, as: "courses", attributes: ["course_id", "name"] }],
     });
 
-    if (!teacher)
-      return res.status(404).json({ message: "Teacher not found for this customer" });
+    if (!teacher) {
+      return response.errorMessageResponse(
+        res,
+        404,
+        {},
+        HTTP_MESSAGES.EN.NOT_FOUND("Teacher")
+      );
+    }
 
-    res.status(200).json({ success: true, data: teacher });
+    return response.successResponse(
+      res,
+      200,
+      teacher,
+      HTTP_MESSAGES.EN.DATA_FETCH_SUCCESS("Teacher")
+    );
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error("❌ Get Teacher By ID Error:", error);
+    return response.errorMessageResponse(
+      res,
+      500,
+      {},
+      HTTP_MESSAGES.EN.SERVER_ERROR
+    );
   }
 };
 
@@ -93,17 +134,31 @@ export const updateTeacher = async (req, res) => {
     const customer_id = req.user?.customer_id || req.body.customer_id;
 
     const teacher = await Teacher.findOne({ where: { teacher_id: id, customer_id } });
-    if (!teacher)
-      return res.status(404).json({ message: "Teacher not found for this customer" });
+    if (!teacher) {
+      return response.errorMessageResponse(
+        res,
+        404,
+        {},
+        HTTP_MESSAGES.EN.NOT_FOUND("Teacher")
+      );
+    }
 
     await teacher.update(req.body);
-    res.status(200).json({
-      success: true,
-      message: "Teacher updated successfully",
-      data: teacher,
-    });
+
+    return response.successResponse(
+      res,
+      200,
+      teacher,
+      HTTP_MESSAGES.EN.UPDATE_SUCCESS("Teacher")
+    );
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error("❌ Update Teacher Error:", error);
+    return response.errorMessageResponse(
+      res,
+      500,
+      {},
+      HTTP_MESSAGES.EN.SERVER_ERROR
+    );
   }
 };
 
@@ -116,15 +171,30 @@ export const deleteTeacher = async (req, res) => {
     const customer_id = req.user?.customer_id || req.query.customer_id;
 
     const teacher = await Teacher.findOne({ where: { teacher_id: id, customer_id } });
-    if (!teacher)
-      return res.status(404).json({ message: "Teacher not found for this customer" });
+    if (!teacher) {
+      return response.errorMessageResponse(
+        res,
+        404,
+        {},
+        HTTP_MESSAGES.EN.NOT_FOUND("Teacher")
+      );
+    }
 
     await teacher.destroy();
-    res.status(200).json({
-      success: true,
-      message: "Teacher deleted successfully",
-    });
+
+    return response.successResponse(
+      res,
+      200,
+      {},
+      HTTP_MESSAGES.EN.DELETE_SUCCESS("Teacher")
+    );
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error("❌ Delete Teacher Error:", error);
+    return response.errorMessageResponse(
+      res,
+      500,
+      {},
+      HTTP_MESSAGES.EN.SERVER_ERROR
+    );
   }
 };

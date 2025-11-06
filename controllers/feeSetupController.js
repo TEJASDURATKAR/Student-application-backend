@@ -1,6 +1,7 @@
 import { Op } from "sequelize";
 import models from "../models/index.js";
-const { Batches, FeeSetup, Installment, Admission, Customer } = models;
+
+const { Batches, FeeSetup, Installment, Admission, Customer, Course } = models;
 
 // ✅ Create Fee Setup (scoped by customer)
 export const createFeeSetup = async (req, res) => {
@@ -82,11 +83,6 @@ export const createFeeSetup = async (req, res) => {
   }
 };
 
-
-
-
-
-
 // ✅ Get All Fee Setups (scoped by customer)
 export const getAllFeeSetups = async (req, res) => {
   try {
@@ -96,9 +92,18 @@ export const getAllFeeSetups = async (req, res) => {
       where: { customer_id, is_deleted: false },
       include: [
         { model: Admission, as: "admission" },
-        // { model: Customer, as: "Customer" },
-        { model: Installment, as: "installments" }, // ✅ alias fixed
-        { model: Batches, as: "batch" },
+        { model: Installment, as: "installments" },
+        {
+          model: Batches,
+          as: "batch",
+          include: [
+            {
+              model: Course,
+              as: "course", // ✅ fetch course from batch
+              attributes: ["course_id", "name"], // only what you need
+            },
+          ],
+        },
       ],
       order: [["createdAt", "DESC"]],
     });
@@ -106,7 +111,11 @@ export const getAllFeeSetups = async (req, res) => {
     res.status(200).json({ success: true, count: fees.length, data: fees });
   } catch (error) {
     console.error("❌ getAllFeeSetups error:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
   }
 };
 
@@ -121,17 +130,31 @@ export const getFeeSetupById = async (req, res) => {
       include: [
         { model: Admission, as: "admission" },
         { model: Installment, as: "installments" },
-        // { model: Batches, as: "batch" },
+        {
+          model: Batches,
+          as: "batch",
+          include: [
+            {
+              model: Course,
+              as: "course", // ✅ fetch course info inside batch
+              attributes: ["course_id", "name"],
+            },
+          ],
+        },
       ],
     });
 
     if (!feeSetup)
-      return res.status(404).json({ success: false, message: "Fee setup not found for this customer" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Fee setup not found for this customer" });
 
     res.status(200).json({ success: true, data: feeSetup });
   } catch (error) {
     console.error("❌ getFeeSetupById error:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
+    res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error", error: error.message });
   }
 };
 
@@ -244,10 +267,7 @@ export const updateFeeSetup = async (req, res) => {
   }
 };
 
-
-// ✅ Soft Delete FeeSetup (scoped by customer)
-// ✅ Soft Delete Fee Setup (Scoped by Customer)
-// ✅ Soft Delete Fee Setup (Always returns JSON)
+// ✅ Delete Fee Setup (soft delete + related installments)
 export const deleteFeeSetup = async (req, res) => {
   try {
     const { id } = req.params;
