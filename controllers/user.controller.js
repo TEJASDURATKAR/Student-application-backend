@@ -37,7 +37,7 @@ const sendMail = async (to, subject, message) => {
 // ==================== Add User ====================
 export const addUser = async (req, res) => {
   try {
-    const { username, full_name, email, role_id, customer_id } = req.body;
+    const { username, full_name,mobile_number, email, role_id, customer_id,status } = req.body;
 
     if (!role_id) return response.errorMessageResponse(res, 400, {}, "Role ID is required");
     if (!customer_id) return response.errorMessageResponse(res, 400, {}, "Customer ID is required");
@@ -45,7 +45,7 @@ export const addUser = async (req, res) => {
     const temppassword = generateTempPassword();
     const hashedPassword = await bcrypt.hash(temppassword, 10);
 
-    await User.create({ username, full_name, email, password_hash: hashedPassword, role_id, customer_id });
+    await User.create({ username, full_name,mobile_number, email, password_hash: hashedPassword, role_id, customer_id, status });
 
     const message = `Hello,\nYour username: ${username}\nYour password: ${temppassword}\nKeep it safe!`;
     await sendMail(email, "Your Account Credentials", message);
@@ -97,8 +97,10 @@ export const getAllUsers = async (req, res) => {
         "user_id",
         "full_name",
         "username",
+        "mobile_number",
         "email",
         "role_id",
+        "status",
         "customer_id",
         "createdAt"
       ],
@@ -170,7 +172,7 @@ export const getUserById = async (req, res) => {
 
     const user = await User.findOne({
       where: { user_id: id, customer_id },
-      attributes: ['user_id', 'username', 'email', 'role_id','customer_id']
+      attributes: ['user_id', 'username', 'email', 'role_id','customer_id','status','mobile_number']
     });
 
     if (!user) return response.errorMessageResponse(res, 404, {}, HTTP_MESSAGES.EN.USER_NOT_FOUND);
@@ -190,7 +192,7 @@ export const updateUser = async (req, res) => {
     const user = await User.findOne({ where: { user_id: userId, customer_id } });
     if (!user) return response.errorMessageResponse(res, 404, {}, HTTP_MESSAGES.EN.USER_NOT_FOUND);
 
-    const { username, full_name, email, role_id, mobile_number, address } = req.body;
+    const { username, full_name, email, role_id, mobile_number, address, status} = req.body;
 
     if (username) user.username = username;
     if (full_name) user.full_name = full_name;
@@ -198,6 +200,7 @@ export const updateUser = async (req, res) => {
     if (role_id) user.role_id = role_id;
     if (mobile_number) user.mobile_number = mobile_number;
     if (address) user.address = address;
+    if (status) user.status = status;
 
     await user.save();
 

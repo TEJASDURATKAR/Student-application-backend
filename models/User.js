@@ -46,6 +46,15 @@ const User = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    status: {
+      type: DataTypes.ENUM("active", "inactive", "suspended"),
+      allowNull: false,
+      defaultValue: "active",
+    },
+    mobile_number: {
+        type: DataTypes.STRING(20),
+        allowNull: true
+      },
     customer_id: {
       type: DataTypes.INTEGER,
       allowNull: true,

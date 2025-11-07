@@ -27,6 +27,13 @@ const Role = sequelize.define("roles", {
     type: DataTypes.DATE,
     allowNull: true,
   },
+    // ✅ Add status column
+  status: {
+    type: DataTypes.ENUM("active", "inactive", "suspended"),
+    allowNull: false,
+    defaultValue: "active",
+  },
+
        // ✅ Add soft delete / active flags
   is_active: {
     type: DataTypes.BOOLEAN,

@@ -100,7 +100,7 @@ export const getAllFeeSetups = async (req, res) => {
             {
               model: Course,
               as: "course", // ✅ fetch course from batch
-              attributes: ["course_id", "name"], // only what you need
+              attributes: ["course_id", "name","fee"], // only what you need
             },
           ],
         },
@@ -315,4 +315,3 @@ export const deleteFeeSetup = async (req, res) => {
     });
   }
 };
-

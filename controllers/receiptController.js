@@ -8,11 +8,26 @@ import response from "../const/response.js";
 import { HTTP_MESSAGES } from "../const/message.js";
 
 
-/** Utility: Generate unique receipt number */
 const generateReceiptNo = async (customer_id) => {
-  const count = await Receipt.count({ where: { customer_id } });
-  const num = count + 1;
-  return `REC-${String(num).padStart(5, "0")}`; // Example: REC-00001
+  let receipt_no;
+  let isUnique = false;
+
+  while (!isUnique) {
+    // ✅ Generate a random 5-digit number
+    const randomNum = Math.floor(10000 + Math.random() * 90000);
+    receipt_no = `REC-${randomNum}`;
+
+    // ✅ Check uniqueness for that customer
+    const existing = await Receipt.findOne({
+      where: { customer_id, receipt_no },
+    });
+
+    if (!existing) {
+      isUnique = true;
+    }
+  }
+
+  return receipt_no;
 };
 
 /** ✅ Download Receipt as PDF */
@@ -404,12 +419,13 @@ export const createReceipt = async (req, res) => {
     await installment.update({ payment_status: "paid" });
 
     // ✅ Step 7: Respond
-    return response.successResponse(
-      res,
-      201,
-      { receipt: newReceipt },
-      HTTP_MESSAGES.EN.DATA_ADDED_SUCCESS
-    );      
+    return res.status(201).json({
+  success: true,
+  message: "Receipt created successfully",
+  receipt_id: newReceipt.receipt_id,
+  receipt: newReceipt
+});
+     
   } catch (error) {
     console.error("Error creating receipt:", error);
     return res.status(500).json({
